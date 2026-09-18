@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PINK DASH 2077</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: #05020a;
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    #game-container {
+      position: relative;
+      width: 900px;
+      height: 500px;
+      background: #0d021a;
+      border-radius: 20px;
+      box-shadow: 0 0 50px rgba(255, 20, 147, 0.4), inset 0 0 30px rgba(255, 20, 147, 0.2);
+      border: 2px solid #ff1493;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: rgba(10, 2, 20, 0.92);
+      backdrop-filter: blur(10px);
+      z-index: 10;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .game-title {
+      font-size: 54px;
+      font-weight: 900;
+      color: #ff69b4;
+      text-shadow: 0 0 10px #ff1493, 0 0 20px #ff1493, 0 0 40px #ff1493, 0 0 80px #ff69b4;
+      margin-bottom: 35px;
+      letter-spacing: 4px;
+    }
+
+    .btn {
+      background: #ff1493;
+      color: #fff;
+      border: none;
+      padding: 16px 50px;
+      font-size: 22px;
+      font-weight: 700;
+      border-radius: 35px;
+      cursor: pointer;
+      box-shadow: 0 0 25px #ff1493, 0 0 50px rgba(255, 20, 147, 0.6);
+      transition: all 0.2s ease;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 2px;
+      text-shadow: 0 0 5px #fff;
+    }
+
+    .btn:hover {
+      transform: scale(1.08);
+      background: #ff69b4;
+      box-shadow: 0 0 35px #ff69b4, 0 0 70px #ff1493;
+    }
+
+    .instructions-card {
+      background: rgba(255, 20, 147, 0.08);
+      border: 1px solid #ff1493;
+      box-shadow: 0 0 20px rgba(255, 20, 147, 0.3);
+      border-radius: 16px;
+      padding: 25px 40px;
+      margin-bottom: 30px;
+      text-align: center;
+      max-width: 480px;
+    }
+
+    .instructions-card h2 {
+      color: #ff69b4;
+      font-size: 22px;
+      margin-bottom: 15px;
+      text-shadow: 0 0 10px #ff1493;
+    }
+
+    .instructions-card p {
+      color: #fff;
+      font-size: 16px;
+      line-height: 1.8;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+
+    .hud {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 5;
+      pointer-events: none;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ff69b4;
+      text-shadow: 0 0 10px #ff1493;
+    }
+
+    .score-box {
+      background: rgba(255, 20, 147, 0.15);
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: 1px solid #ff1493;
+      box-shadow: 0 0 15px rgba(255, 20, 147, 0.3);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="game-container">
+    <div class="hud">
+      <div class="score-box">SCORE: <span id="score-val" style="color: #fff;">0</span></div>
+      <div class="score-box">TIME: <span id="time-val" style="color: #fff;">0s</span></div>
+      <div class="score-box">HIGH SCORE: <span id="high-score-val" style="color: #fff;">0</span></div>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen">
+      <h1 class="game-title">PINK DASH 2077</h1>
+      <button id="play-btn" class="btn">PLAY</button>
+    </div>
+
+    <!-- Instructions Screen -->
+    <div id="instructions-screen" class="screen hidden">
+      <div class="instructions-card">
+        <h2>HOW TO PLAY</h2>
+        <p>• <b>JUMP:</b> Press SPACE or UP ARROW</p>
+        <p>• <b>SLIDE:</b> Press DOWN ARROW</p>
+        <p>• Avoid obstacles & collect neon stars!</p>
+      </div>
+      <button id="continue-btn" class="btn">CONTINUE</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over-screen" class="screen hidden">
+      <h1 class="game-title" style="font-size: 46px;">GAME OVER</h1>
+      <div class="instructions-card" style="margin-bottom: 25px;">
+        <p>FINAL SCORE: <span id="final-score" style="color: #ff69b4; font-weight: bold;">0</span></p>
+        <p>TIME SURVIVED: <span id="final-time" style="color: #ff69b4; font-weight: bold;">0s</span></p>
+      </div>
+      <button id="restart-btn" class="btn">RESTART</button>
+    </div>
+
+    <canvas id="gameCanvas" width="900" height="500"></canvas>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // UI Elements
+    const startScreen = document.getElementById('start-screen');
+    const instructionsScreen = document.getElementById('instructions-screen');
+    const gameOverScreen = document.getElementById('game-over-screen');
+    const playBtn = document.getElementById('play-btn');
+    const continueBtn = document.getElementById('continue-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const scoreVal = document.getElementById('score-val');
+    const timeVal = document.getElementById('time-val');
+    const highScoreVal = document.getElementById('high-score-val');
+    const finalScore = document.getElementById('final-score');
+    const finalTime = document.getElementById('final-time');
+
+    // Audio Synthesizer (Neon Web Audio API)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(freq, type, duration) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    }
+
+    // Game States
+    let isPlaying = false;
+    let score = 0;
+    let startTime = 0;
+    let elapsedTime = 0;
+    let highScore = localStorage.getItem('pink_dash_high') || 0;
+    highScoreVal.textContent = highScore;
+    let gameSpeed = 6;
+    let frameCount = 0;
+
+    // Player Object
+    const player = {
+      x: 100,
+      y: 350,
+      width: 40,
+      height: 50,
+      baseHeight: 50,
+      slideHeight: 25,
+      velocityY: 0,
+      gravity: 0.75,
+      jumpPower: -14,
+      isGrounded: true,
+      isSliding: false
+    };
+
+    let obstacles = [];
+    let coins = [];
+
+    // UI Listeners
+    playBtn.addEventListener('click', () => {
+      playSound(600, 'sine', 0.1);
+      startScreen.classList.add('hidden');
+      instructionsScreen.classList.remove('hidden');
+    });
+
+    continueBtn.addEventListener('click', () => {
+      playSound(800, 'sine', 0.15);
+      instructionsScreen.classList.add('hidden');
+      startGame();
+    });
+
+    restartBtn.addEventListener('click', () => {
+      playSound(700, 'sine', 0.15);
+      gameOverScreen.classList.add('hidden');
+      startGame();
+    });
+
+    // Keyboard Input
+    window.addEventListener('keydown', (e) => {
+      if (!isPlaying) return;
+      if ((e.code === 'Space' || e.code === 'ArrowUp') && player.isGrounded) {
+        player.velocityY = player.jumpPower;
+        player.isGrounded = false;
+        playSound(400, 'square', 0.12);
+      }
+      if (e.code === 'ArrowDown' && player.isGrounded) {
+        player.isSliding = true;
+        player.height = player.slideHeight;
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'ArrowDown') {
+        player.isSliding = false;
+        player.height = player.baseHeight;
+      }
+    });
+
+    function startGame() {
+      isPlaying = true;
+      score = 0;
+      gameSpeed = 6;
+      frameCount = 0;
+      startTime = Date.now();
+      obstacles = [];
+      coins = [];
+      player.y = 350;
+      player.velocityY = 0;
+      scoreVal.textContent = '0';
+      timeVal.textContent = '0s';
+      animate();
+    }
+
+    function animate() {
+      if (!isPlaying) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      frameCount++;
+
+      // Timer
+      elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+      timeVal.textContent = `${elapsedTime}s`;
+
+      // Player Physics
+      player.velocityY += player.gravity;
+      player.y += player.velocityY;
+
+      const groundY = 400 - player.height;
+      if (player.y >= groundY) {
+        player.y = groundY;
+        player.velocityY = 0;
+        player.isGrounded = true;
+      }
+
+      // Neon Grid Ground
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = '#ff1493';
+      ctx.fillStyle = '#ff1493';
+      ctx.fillRect(0, 400, canvas.width, 4);
+
+      ctx.fillStyle = 'rgba(255, 20, 147, 0.08)';
+      ctx.fillRect(0, 404, canvas.width, 96);
+
+      // Neon Player
+      ctx.shadowBlur = 25;
+      ctx.shadowColor = '#ff69b4';
+      ctx.fillStyle = '#ff69b4';
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+
+      // Inner Core
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(player.x + 5, player.y + 5, player.width - 10, player.height - 10);
+
+      // Spawn Obstacles
+      if (frameCount % 90 === 0) {
+        const isHigh = Math.random() > 0.5;
+        obstacles.push({
+          x: canvas.width,
+          y: isHigh ? 310 : 360,
+          width: 30,
+          height: isHigh ? 30 : 40
+        });
+      }
+
+      // Spawn Neon Stars
+      if (frameCount % 120 === 0) {
+        coins.push({
+          x: canvas.width,
+          y: Math.random() > 0.5 ? 310 : 250,
+          size: 10
+        });
+      }
+
+      // Update Obstacles
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        let obs = obstacles[i];
+        obs.x -= gameSpeed;
+
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#ff1493';
+        ctx.fillStyle = '#ff1493';
+        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+
+        // Collision Check
+        if (
+          player.x < obs.x + obs.width &&
+          player.x + player.width > obs.x &&
+          player.y < obs.y + obs.height &&
+          player.y + player.height > obs.y
+        ) {
+          endGame();
+        }
+
+        if (obs.x + obs.width < 0) obstacles.splice(i, 1);
+      }
+
+      // Update Coins
+      for (let i = coins.length - 1; i >= 0; i--) {
+        let coin = coins[i];
+        coin.x -= gameSpeed;
+
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#ffffff';
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(coin.x, coin.y, coin.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Collection Check
+        let dist = Math.hypot(player.x + player.width/2 - coin.x, player.y + player.height/2 - coin.y);
+        if (dist < player.width/2 + coin.size) {
+          score += 15;
+          scoreVal.textContent = score;
+          playSound(900, 'triangle', 0.08);
+          coins.splice(i, 1);
+        } else if (coin.x < 0) {
+          coins.splice(i, 1);
+        }
+      }
+
+      // Progression
+      if (frameCount % 6 === 0) {
+        score++;
+        scoreVal.textContent = score;
+      }
+      if (frameCount % 400 === 0) {
+        gameSpeed += 0.6;
+      }
+
+      ctx.shadowBlur = 0; // Reset blur
+      requestAnimationFrame(animate);
+    }
+
+    function endGame() {
+      isPlaying = false;
+      playSound(150, 'sawtooth', 0.3);
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('pink_dash_high', highScore);
+        highScoreVal.textContent = highScore;
+      }
+      finalScore.textContent = score;
+      finalTime.textContent = `${elapsedTime}s`;
+      gameOverScreen.classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
